@@ -3,8 +3,7 @@ Package logging is part of the Tarmac suite of Host Callback packages. This pack
 to provide WASM functions with a host callback interface that provides logging capabilities.
 
 	import (
-		"github.com/madflojo/tarmac/pkg/callbacks"
-		"github.com/madflojo/tarmac/pkg/callbacks/logging"
+		"github.com/tarmac-project/tarmac/pkg/callbacks/logging"
 	)
 
 	func main() {
@@ -17,7 +16,6 @@ to provide WASM functions with a host callback interface that provides logging c
 		router := callbacks.New()
 		router.RegisterCallback("logging", "Info", logger.Info)
 	}
-
 */
 package logging
 
@@ -97,16 +95,16 @@ func (l *Logger) Warn(b []byte) ([]byte, error) {
 type NoOpLog struct{}
 
 // Info does nothing
-func (log NoOpLog) Info(args ...interface{}) {}
+func (log NoOpLog) Info(...interface{}) {}
 
 // Warn does nothing
-func (log NoOpLog) Warn(args ...interface{}) {}
+func (log NoOpLog) Warn(...interface{}) {}
 
 // Error does nothing
-func (log NoOpLog) Error(args ...interface{}) {}
+func (log NoOpLog) Error(...interface{}) {}
 
 // Debug does nothing
-func (log NoOpLog) Debug(args ...interface{}) {}
+func (log NoOpLog) Debug(...interface{}) {}
 
 // Trace does nothing
-func (log NoOpLog) Trace(args ...interface{}) {}
+func (log NoOpLog) Trace(...interface{}) {}

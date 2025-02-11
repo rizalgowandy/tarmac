@@ -1,5 +1,16 @@
 version: '2'
 services:
+  tarmac-performance:
+    build: .
+    ports:
+      - 443:8443
+      - 80:8080
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_LISTEN_ADDR=0.0.0.0:8080"
+      - "APP_WASM_FUNCTION=/testdata/default/tarmac.wasm"
+    volumes:
+      - "./testdata:/testdata"
   tarmac:
     build: .
     ports:
@@ -13,7 +24,7 @@ services:
       - "APP_CONSUL_KEYS_PREFIX=tarmac/config"
       - "CONSUL_HTTP_ADDR=consul:8500"
       - "CONSUL_HTTP_SSL=false"
-      - "APP_WASM_FUNCTION=./testdata/tarmac.wasm"
+      - "APP_WASM_FUNCTION_CONFIG=/testdata/tarmac.json"
       - "ENABLE_SQL=true"
       - "ENABLE_KVSTORE=true"
       - "SQL_TYPE=mysql"
@@ -23,14 +34,16 @@ services:
     volumes:
       - "./testdata:/testdata"
     depends_on:
+      - mysql
       - redis
       - consul
       - consulator
-  tests:
-    build: .
-    working_dir: /go/src/github.com/madflojo/tarmac
-    entrypoint: go test -v -covermode=count -coverprofile=/tmp/coverage/coverage.out ./...
+  tests-base:
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
+    entrypoint: go test -v -race -covermode=atomic -coverprofile=/tmp/coverage/coverage.out -skip "TestFullService/.*" ./...
     volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
       - "./coverage:/tmp/coverage"
       - "./example:/example"
       - "./testdata:/testdata"
@@ -42,16 +55,128 @@ services:
       - "CONSUL_HTTP_SSL=false"
     depends_on:
       - redis
+      - consul
+      - consulator
+      - mysql
+  tests-inmemory:
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
+    entrypoint: go test -v -race -covermode=atomic -coverprofile=/tmp/coverage/coverage.out -run "TestFullService/In-Memory.*" ./...
+    volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
+      - "./coverage:/tmp/coverage"
+      - "./example:/example"
+      - "./testdata:/testdata"
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_CONSUL_ADDR=consul:8500"
+      - "APP_CONSUL_KEYS_PREFIX=tarmac/config"
+      - "CONSUL_HTTP_ADDR=consul:8500"
+      - "CONSUL_HTTP_SSL=false"
+    depends_on:
+      - consul
+      - consulator
+  tests-boltdb:
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
+    entrypoint: go test -v -race -covermode=atomic -coverprofile=/tmp/coverage/coverage.out -run "TestFullService/BoltDB.*" ./...
+    volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
+      - "./coverage:/tmp/coverage"
+      - "./example:/example"
+      - "./testdata:/testdata"
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_CONSUL_ADDR=consul:8500"
+      - "APP_CONSUL_KEYS_PREFIX=tarmac/config"
+      - "CONSUL_HTTP_ADDR=consul:8500"
+      - "CONSUL_HTTP_SSL=false"
+    depends_on:
+      - consul
+      - consulator
+  tests-redis:
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
+    entrypoint: go test -v -race -covermode=atomic -coverprofile=/tmp/coverage/coverage.out -run "TestFullService/Redis.*" ./...
+    volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
+      - "./coverage:/tmp/coverage"
+      - "./example:/example"
+      - "./testdata:/testdata"
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_CONSUL_ADDR=consul:8500"
+      - "APP_CONSUL_KEYS_PREFIX=tarmac/config"
+      - "CONSUL_HTTP_ADDR=consul:8500"
+      - "CONSUL_HTTP_SSL=false"
+    depends_on:
+      - redis
+      - consul
+      - consulator
+  tests-cassandra:
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
+    entrypoint: go test -v -race -covermode=atomic -coverprofile=/tmp/coverage/coverage.out -run "TestFullService/Cassandra.*" ./...
+    volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
+      - "./coverage:/tmp/coverage"
+      - "./example:/example"
+      - "./testdata:/testdata"
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_CONSUL_ADDR=consul:8500"
+      - "APP_CONSUL_KEYS_PREFIX=tarmac/config"
+      - "CONSUL_HTTP_ADDR=consul:8500"
+      - "CONSUL_HTTP_SSL=false"
+    depends_on:
       - cassandra-primary
       - cassandra
       - consul
       - consulator
+  tests-mysql:
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
+    entrypoint: go test -v -race -covermode=atomic -coverprofile=/tmp/coverage/coverage.out -run "TestFullService/MySQL.*" ./...
+    volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
+      - "./coverage:/tmp/coverage"
+      - "./example:/example"
+      - "./testdata:/testdata"
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_CONSUL_ADDR=consul:8500"
+      - "APP_CONSUL_KEYS_PREFIX=tarmac/config"
+      - "CONSUL_HTTP_ADDR=consul:8500"
+      - "CONSUL_HTTP_SSL=false"
+    depends_on:
       - mysql
+      - consul
+      - consulator
+  tests-postgres:
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
+    entrypoint: go test -v -race -covermode=atomic -coverprofile=/tmp/coverage/coverage.out -run "TestFullService/Postgres.*" ./...
+    volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
+      - "./coverage:/tmp/coverage"
+      - "./example:/example"
+      - "./testdata:/testdata"
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_CONSUL_ADDR=consul:8500"
+      - "APP_CONSUL_KEYS_PREFIX=tarmac/config"
+      - "CONSUL_HTTP_ADDR=consul:8500"
+      - "CONSUL_HTTP_SSL=false"
+    depends_on:
+      - postgres
+      - consul
+      - consulator
   benchmarks:
-    build: .
-    working_dir: /go/src/github.com/madflojo/tarmac
+    image: golang:latest
+    working_dir: /go/src/github.com/tarmac-project/tarmac
     entrypoint: go test -v -run=XXX -bench=. ./...
     volumes:
+      - "./:/go/src/github.com/tarmac-project/tarmac"
       - "./coverage:/tmp/coverage"
       - "./example:/example"
       - "./testdata:/testdata"
@@ -68,15 +193,16 @@ services:
       - consul
       - consulator
       - mysql
+      - postgres
   redis:
     image: bitnami/redis:latest
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
   cassandra-primary:
     image: madflojo/cassandra:latest
-    command: /bin/bash -c "sleep 1 && /docker-entrypoint.sh cassandra -f"
     environment:
       - CASSANDRA_KEYSPACE=tarmac
+      - SLEEP_TIMER=1
     expose:
       - 7000
       - 7001
@@ -85,10 +211,10 @@ services:
       - 9160
   cassandra:
     image: madflojo/cassandra:latest
-    command: /bin/bash -c "sleep 15 && /docker-entrypoint.sh cassandra -f"
     environment:
       - CASSANDRA_SEEDS=cassandra-primary
       - CASSANDRA_KEYSPACE=tarmac
+      - SLEEP_TIMER=15
     depends_on:
       - cassandra-primary
     expose:
@@ -105,13 +231,22 @@ services:
       MYSQL_DATABASE: example
     ports:
       - 3306:3306
+  postgres:
+    image: bitnami/postgresql:latest
+    restart: always
+    environment:
+      - POSTGRESQL_USERNAME=example
+      - POSTGRESQL_PASSWORD=example
+      - POSTGRESQL_DATABASE=example
+    ports:
+      - 5432:5432
   consul:
-    image: consul
+    image: bitnami/consul:latest
     ports:
       - 8500:8500
   consulator:
     image: lewispeckover/consulator
-    command: "import /app/tarmac-consul.yml"
+    command: "import /app/testdata/tarmac-consul.yml"
     depends_on:
       - consul
     volumes:

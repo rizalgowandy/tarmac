@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/madflojo/tarmac/app"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
+	"github.com/tarmac-project/tarmac/pkg/app"
 )
 
 func main() {
@@ -21,7 +21,14 @@ func main() {
 	cfg.SetDefault("key_file", "/certs/key.key")
 	cfg.SetDefault("config_watch_interval", 15)
 	cfg.SetDefault("wasm_function", "/functions/tarmac.wasm")
+	cfg.SetDefault("wasm_function_config", "/functions/tarmac.json")
+	cfg.SetDefault("kvstore_type", "internal")
+	cfg.SetDefault("boltdb_filename", "/data/tarmac/tarmac.db")
+	cfg.SetDefault("boltdb_bucket", "tarmac")
+	cfg.SetDefault("boltdb_permissions", 0600)
+	cfg.SetDefault("boltdb_timeout", 5)
 	cfg.SetDefault("grpc_socket_path", "/grpc.sock")
+	cfg.SetDefault("run_mode", "daemon")
 
 	// Load Config
 	cfg.AddConfigPath("./conf")
@@ -57,7 +64,9 @@ func main() {
 	}
 
 	// Run application
-	err = app.Run(cfg)
+	srv := app.New(cfg)
+	defer srv.Stop()
+	err = srv.Run()
 	if err != nil && err != app.ErrShutdown {
 		log.Fatalf("Service stopped - %s", err)
 	}

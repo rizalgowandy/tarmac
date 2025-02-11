@@ -25,39 +25,15 @@ When using Environment Variables, all configurations are prefixed with `APP_`. T
 | `APP_CA_FILE` | `ca_file` | `string` | Certificate Authority Bundle File Path \(i.e `/some/path/ca.pem`\). When defined, enables mutual-TLS authentication |
 | `APP_IGNORE_CLIENT_CERT` | `ignore_client_cert` | `string` | When defined will disable Client Cert validation for m-TLS authentication |
 | `APP_WASM_FUNCTION` | `wasm_function` | `string` | Path and Filename of the WASM Function to execute \(Default: `/functions/tarmac.wasm`\) |
+| `APP_WASM_FUNCTION_CONFIG` | `wasm_function_config` | `string` | Path to Service configuration for multi-function services \(Default: `/functions/tarmac.json`\) |
+| `APP_WASM_POOL_SIZE` | `wasm_pool_size` | `int` | Number of WASM function instances to create \(Default: `100`\). Only applicable when `wasm_function` is used. |
 | `APP_ENABLE_PPROF` | `enable_pprof` | `bool` | Enable PProf Collection HTTP end-points |
 | `APP_ENABLE_KVSTORE` | `enable_kvstore` | `bool` | Enable the KV Store |
-| `APP_KVSTORE_TYPE` | `kvstore_type` | `string` | Select KV Store to use (Options: `redis`, `cassandra`)|
-| `APP_REDIS_SERVER` | `redis_server` | `string` | Redis server address |
-| `APP_REDIS_DATABASE` | `redis_database` | `int` | Redis Database (default: `0`) |
-| `APP_REDIS_PASSWORD` | `redis_password` | `string` | Redis password |
-| `APP_REDIS_SENTINEL_SERVERS` | `redis_sentinel_servers` | `[]string` | Redis Sentinel Server Addresses |
-| `APP_REDIS_SENTINEL_MASTER` | `redis_sentinel_master` | `string` | Redis Sentinel Master Instance Name |
-| `APP_REDIS_CONNECT_TIMEOUT` | `redis_connect_timeout` | `int` | Redis Connection Timeout in seconds |
-| `APP_REDIS_HOSTNAME_VERIFY` | `redis_hostname_verify` | `bool` | Skip hostname verification for TLS |
-| `APP_REDIS_KEEPALIVE` | `redis_keepalive` | `int` | TCP Keepalive Interval in seconds (Default: `300`) |
-| `APP_REDIS_MAX_ACTIVE` | `redis_max_active` | `int` | Max Active Connections |
-| `APP_REDIS_READ_TIMEOUT` | `redis_read_timeout` | `int` | Read timeout in seconds |
-| `APP_REDIS_WRITE_TIMEOUT` | `redis_write_timeout` | `int` | Write timeout in seconds |
-| `APP_CASSANDRA_HOSTS` | `cassandra_hosts` | `[]string` | Cassandra node addresses |
-| `APP_CASSANDRA_PORT` | `cassandra_port` | `int` | Cassandra node port |
-| `APP_CASSANDRA_KEYSPACE` | `cassandra_keyspace` | `string` | Cassandra Keyspace name |
-| `APP_CASSANDRA_CONSISTENCY` | `cassandra_consistency` | `string` | Desired Consistency (Default: `Quorum`)|
-| `APP_CASSANDRA_REPL_STRATEGY` | `cassandra_repl_strategy` | `string` | Replication Strategy for Cluster (Default: `SimpleStrategy`)|
-| `APP_CASSANDRA_REPLICAS` | `cassandra_replicas` | `int` | Default number of replicas for data (Default: `1`) |
-| `APP_CASSANDRA_USER` | `cassandra_user` | `string` | Username to authenticate with |
-| `APP_CASSANDRA_PASSWORD` | `cassandra_password` | `string` | Password to authenticate with |
-| `APP_CASSANDRA_HOSTNAME_VERIFY` | `cassandra_hostname_verify` | `bool` | Enable/Disable hostname verification for TLS |
-| | `scheduled_tasks` | `map[string]ScheduledTask` | Configured Scheduled WASM Function executions |
-
-### Scheduled Task Definition
-
-The below options are used to configure scheduled tasks.
-
-| JSON | Type | Description |
-| :--- | :--- | :--- |
-| `interval` | `int` | Interval (in seconds) task execution should run (recurring) |
-| `wasm_function` | `string` | Path and Filename of the WASM Function to execute |
+| `APP_KVSTORE_TYPE` | `kvstore_type` | `string` | Select KV Store to use (Options: `redis`, `cassandra`, `boltdb`, `in-memory`, `internal`)|
+| `APP_ENABLE_SQL` | `enable_sql` | `bool` | Enable the SQL Store |
+| `APP_SQL_TYPE` | `sql_type` | `string` | Select SQL Store to use (Options: `postgres`, `mysql`)|
+| `APP_RUN_MODE` | `run_mode` | `string` | Select the run mode for Tarmac (Options: `daemon`, `job`). Default: `daemon`. The `job` option will cause Tarmac to exit after init functions are executed. |
+| `APP_ENABLE_MAINTENANCE_MODE` | `enable_maintenance_mode` | `bool` | Enable Maintenance Mode. When enabled, Tarmac will return a 503 for requests to `/ready` allowing the service to go into "maintenance mode". |
 
 ## Consul Format
 

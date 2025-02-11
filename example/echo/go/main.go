@@ -4,39 +4,29 @@ package main
 
 import (
 	"fmt"
-	wapc "github.com/wapc/wapc-guest-tinygo"
+
+	"github.com/tarmac-project/tarmac/pkg/sdk"
 )
 
-func main() {
-	// Tarmac uses waPC to facilitate WASM module execution. Modules must register their custom handlers under the
-	// appropriate method as shown below.
-	wapc.RegisterFunctions(wapc.Functions{
-		// Register a GET request handler
-		"GET": NoHandler,
-		// Register a POST request handler
-		"POST": Handler,
-		// Register a PUT request handler
-		"PUT": Handler,
-		// Register a DELETE request handler
-		"DELETE": NoHandler,
-	})
-}
+// tarmac provides an interface for executing host capabilities such as Logging, KVStore, etc.
+var tarmac *sdk.Tarmac
 
-// NoHandler is a custom Tarmac Handler function that will return an error that denies
-// the client request.
-func NoHandler(payload []byte) ([]byte, error) {
-	return []byte(""), fmt.Errorf("Not Implemented")
+func main() {
+	var err error
+
+	// Initialize SDK
+	tarmac, err = sdk.New(sdk.Config{Handler: Handler})
+	if err != nil {
+		return
+	}
 }
 
 // Handler is the custom Tarmac Handler function that will receive a payload and
 // must return a payload along with a nil error.
 func Handler(payload []byte) ([]byte, error) {
-	// Perform a host callback to log the incoming request
-	_, err := wapc.HostCall("tarmac", "logger", "trace", []byte(fmt.Sprintf("Reversing Payload: %s", payload)))
-	if err != nil {
-		return []byte(""), fmt.Errorf("Unable to call callback - %s", err)
-	}
+	// Log It
+	tarmac.Logger.Trace(fmt.Sprintf("Echoing Payload: %s", payload))
 
-	// Return the payload via a ServerResponse JSON
+	// Return the payload
 	return payload, nil
 }
